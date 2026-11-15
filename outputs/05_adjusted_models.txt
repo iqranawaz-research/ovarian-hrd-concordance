@@ -1,0 +1,50 @@
+Call:
+coxph(formula = as.formula(paste("Surv(os_time, os_event) ~", 
+    rhs)), data = d)
+
+  n= 271, number of events= 161 
+   (18 observations deleted due to missingness)
+
+                  coef exp(coef)  se(coef)      z Pr(>|z|)   
+hrd_z        -0.243195  0.784119  0.091252 -2.665   0.0077 **
+expr_z       -0.068684  0.933622  0.088669 -0.775   0.4386   
+age           0.016611  1.016750  0.007817  2.125   0.0336 * 
+hrd_z:expr_z -0.108102  0.897536  0.087352 -1.238   0.2159   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+             exp(coef) exp(-coef) lower .95 upper .95
+hrd_z           0.7841     1.2753    0.6557    0.9377
+expr_z          0.9336     1.0711    0.7847    1.1108
+age             1.0167     0.9835    1.0013    1.0324
+hrd_z:expr_z    0.8975     1.1142    0.7563    1.0651
+
+Concordance= 0.608  (se = 0.025 )
+Likelihood ratio test= 16.55  on 4 df,   p=0.002
+Wald test            = 15.19  on 4 df,   p=0.004
+Score (logrank) test = 15.47  on 4 df,   p=0.004
+
+Call:
+coxph(formula = as.formula(paste("Surv(os_time, os_event) ~", 
+    paste(c("g3", covs), collapse = " + "))), data = d)
+
+  n= 271, number of events= 161 
+   (18 observations deleted due to missingness)
+
+                      coef exp(coef) se(coef)     z Pr(>|z|)   
+g3LowHRD_HighExpr 0.439352  1.551702 0.234259 1.875  0.06072 . 
+g3HighHRD_LowExpr 0.209208  1.232701 0.253769 0.824  0.40971   
+age               0.020951  1.021172 0.007521 2.786  0.00534 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+                  exp(coef) exp(-coef) lower .95 upper .95
+g3LowHRD_HighExpr     1.552     0.6445    0.9804     2.456
+g3HighHRD_LowExpr     1.233     0.8112    0.7496     2.027
+age                   1.021     0.9793    1.0062     1.036
+
+Concordance= 0.595  (se = 0.025 )
+Likelihood ratio test= 11.62  on 3 df,   p=0.009
+Wald test            = 12.14  on 3 df,   p=0.007
+Score (logrank) test = 12.25  on 3 df,   p=0.007
+
