@@ -1,0 +1,248 @@
+Working folder: C:/Users/Hp/Downloads/ov_tcga_pan_can_atlas_2018/ov_tcga_pan_can_atlas_2018 
+Age column: AGE | Stage column: AJCC_PATHOLOGIC_TUMOR_STAGE 
+Expression samples: 300 
+NOT FOUND in expression file: RAD51B, RAD51D 
+Genes used: 15 of 17 (your report says 15 of 17)
+
+Columns in the HRD file:
+[1] "sampleID" "ai1"      "lst1"     "hrd-loh"  "HRD"     
+         sampleID ai1 lst1 hrd-loh HRD
+1 TCGA-02-0001-01   5    8       5  18
+2 TCGA-02-0003-01   2    4       1   7
+3 TCGA-02-0006-01   1    9       3  13
+HRD barcode column: sampleID | HRD score column: HRD 
+
+=== PATIENT FLOW ===
+                       step   n
+1 Patients in clinical file 585
+2            With HRD score 552
+3     With expression score 300
+4                 With both 290
+ANALYSIS n = 289 | deaths = 173 
+
+=== CORRELATION ===
+    n       rho         p     ci_low  ci_high
+1 289 0.0143068 0.8086454 -0.1020431 0.128465
+
+=== GROUPS BY CUT-OFF (reference group = Other) ===
+  cutoff_groups           group  n        HR        lo       hi          p
+1             2 LowHRD_HighExpr 76 1.5649685 1.0875608 2.251944 0.01586463
+2             2 HighHRD_LowExpr 76 0.9829005 0.6844230 1.411544 0.92558629
+3             3 LowHRD_HighExpr 34 1.6571579 1.0507492 2.613537 0.02978599
+4             3 HighHRD_LowExpr 33 1.2603490 0.8003218 1.984801 0.31796799
+5             4 LowHRD_HighExpr 15 1.9422402 1.0197342 3.699294 0.04344453
+6             4 HighHRD_LowExpr 19 1.3773351 0.7799899 2.432149 0.26980550
+
+=== CONTINUOUS MODEL ===
+Call:
+coxph(formula = Surv(os_time, os_event) ~ hrd_z * expr_z, data = d)
+
+  n= 289, number of events= 173 
+
+                 coef exp(coef) se(coef)      z Pr(>|z|)   
+hrd_z        -0.25248   0.77687  0.08483 -2.976  0.00292 **
+expr_z       -0.08560   0.91796  0.08490 -1.008  0.31334   
+hrd_z:expr_z -0.16213   0.85033  0.08600 -1.885  0.05940 . 
+---
+Signif. codes: -0 ‘***’ 0.001 �0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 �
+
+             exp(coef) exp(-coef) lower .95 upper .95
+hrd_z           0.7769      1.287    0.6579    0.9174
+expr_z          0.9180      1.089    0.7772    1.0842
+hrd_z:expr_z    0.8503      1.176    0.7184    1.0065
+
+Concordance= 0.586  (se = 0.024 )
+Likelihood ratio tesLik12.6  on 3 df,   p=0.006
+Wald test           Wal11.31  on 3 df,   p=0.01
+Score (logrank) testSco11.33  on 3 df,   p=0.01
+
+              chisq df    p
+hrd_z        0.4109  1 0.52
+expr_z       0.0983  1 0.75
+hrd_z:expr_z 1.7705  1 0.18
+GLOBAL       2.2159  3 0.53
+
+=== ADJUSTED CONTI
+=== ADJUSTED COCall:
+coxph(formula = as.f
+  n= 271, number of events= 161 
+   (18 observations deleted due to missingness)
+
+                  coef exp(coef)  se(coef)      z Pr(>|z|)   
+hrd_z        -0.243195  0.784119  0.091252 -2.665   0.0077 **
+expr_z       -0.068684  0.933622  0.088669 -0.775   0.4386   
+age           0.016611  1.016750  0.007817  2.125   0.0336 * 
+hrd_z:expr_z -0.108102  0.897536  0.087352 -1.238   0.2159   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+             exp(coef) exp(-coef) lower .95 upper .95
+hrd_z           0.7841     1.2753    0.6557    0.9377
+expr_z          0.9336     1.0711    0.7847    1.1108
+age             1.0167     0.9835    1.0013    1.0324
+hrd_z:expr_z    0.8975     1.1142    0.7563    1.0651
+
+Concordance= 0.608  (se = 0.025 )
+Likelihood ratio test= 16.55  on 4 df,   p=0.002
+Wald test            = 15.19  on 4 df,   p=0.004
+Score (logrank) test = 15.47  on 4 df,   p=0.004
+
+Adjusted model n = 271 | events = 161 
+
+=== TERTILE GROUPS, ADJUSTED ===
+Call:
+
+  n= 271, number of events= 161 
+   (18 observations deleted due to missingness)
+
+                      coef exp(coef) se(coef)     z Pr(>|z|)   
+g3LowHRD_HighExpr 0.439352  1.551702 0.234259 1.875  0.06072 . 
+g3HighHRD_LowExpr 0.209208  1.232701 0.253769 0.824  0.40971   
+age               0.020951  1.021172 0.007521 2.786  0.00534 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+                  exp(coef) exp(-coef) lower .95 upper .95
+g3LowHRD_HighExpr     1.552     0.6445    0.9804     2.456
+g3HighHRD_LowExpr     1.233     0.8112    0.7496     2.027
+age                   1.021     0.9793    1.0062     1.036
+
+Concordance= 0.595  (se = 0.025 )
+Likelihood ratio test= 11.62  on 3 df,   p=0.009
+Wald test            = 12.14  on 3 df,   p=0.007
+Score (logrank) test = 12.25  on 3 df,   p=0.007
+
+
+DONE. Open the "outputs" folder next to this script. Send me the lines printed above.
+
+=== A. CORRELATION, ALL PATIENTS WITH BOTH SCORES ===
+    n        rho         p     ci_low   ci_high
+1 290 0.01108316 0.8509315 -0.1012132 0.1301204
+
+=== B. PATIENT WITH BOTH SCORES BUT NO SURVIVAL DATA ===
+     patient_id hrd     hrber os_time os_event
+18 TCGA-04-1357  58 0.4750519      NA        0
+
+OS_STATUS values:
+
+             0:LIVING 1:DECEASED 
+        11        232        342 
+
+Stage values (all NA means stage was NOT adjusted for):
+
+<NA> 
+ 585 
+
+=== C. SAME PATIENTS FOR EVERY MODEL (age-complete) ===
+n = 271 | deaths = 161 
+
+Group model, unadjusted:
+                  exp(coef) exp(-coef) lower .95 upper .95
+g3LowHRD_HighExpr     1.600      0.625     1.012     2.528
+g3HighHRD_LowExpr     1.239      0.807     0.753     2.039
+g3LowHRD_HighExpr g3HighHRD_LowExpr 
+           0.0443            0.3982 
+
+Group model, adjusted for age:
+                  exp(coef) exp(-coef) lower .95 upper .95
+g3LowHRD_HighExpr     1.552      0.644     0.980     2.456
+g3HighHRD_LowExpr     1.233      0.811     0.750     2.027
+age                   1.021      0.979     1.006     1.036
+g3LowHRD_HighExpr g3HighHRD_LowExpr               age 
+           0.0607            0.4097            0.0053 
+
+Primary additive model (HRD + expression + age):
+       exp(coef) exp(-coef) lower .95 upper .95
+hrd_z      0.806      1.241     0.679     0.957
+expr_z     0.948      1.055     0.800     1.123
+age        1.017      0.983     1.002     1.033
+ hrd_z expr_z    age 
+0.0136 0.5373 0.0302 
+
+Proportional hazards, group model:
+       chisq df     p
+g3      1.44  2 0.486
+age     3.50  1 0.061
+GLOBAL  5.27  3 0.153
+
+Proportional hazards, continuous model + age:
+       chisq df     p
+hrd_z  0.439  1 0.508
+expr_z 0.713  1 0.398
+age    3.486  1 0.062
+GLOBAL 5.348  3 0.148
+
+Interaction test (likelihood ratio):
+Analysis of Deviance Table
+ Cox model: response is  Surv(os_time, os_event)
+ Model 1: ~ hrd_z + expr_z + age
+ Model 2: ~ hrd_z * expr_z + age
+   loglik  Chisq Df Pr(>|Chi|)
+1 -727.22                     
+2 -726.40 1.6327  1     0.2013
+
+=== D. DOES EXPRESSION ADD ANYTHING WITHIN LOW-HRD PATIENTS? ===
+Low-HRD tertile: n = 97 | deaths = 67 
+expression_tertile
+ 1  2  3 
+29 34 34 
+Per 1 SD expression, within low-HRD patients:
+       exp(coef) exp(-coef) lower .95 upper .95
+expr_z     1.052      0.951     0.797     1.389
+[1] 0.7217
+High vs low expression tertile, within low-HRD patients (n = 63 ):
+          exp(coef) exp(-coef) lower .95 upper .95
+high_expr     1.125      0.889     0.606     2.091
+[1] 0.7085
+
+Lowest HRD tertile versus everyone else (n = 289 ):
+                  exp(coef) exp(-coef) lower .95 upper .95
+I(hrd_t == 1)TRUE     1.769      0.565     1.295     2.415
+
+=== E. MULTIPLE-TESTING ADJUSTMENT FOR THE SIX GROUP COMPARISONS ===
+  cutoff_groups           group        HR          p BH_adjusted_p
+1             2 LowHRD_HighExpr 1.5649685 0.01586463         0.087
+2             2 HighHRD_LowExpr 0.9829005 0.92558629         0.926
+3             3 LowHRD_HighExpr 1.6571579 0.02978599         0.087
+4             3 HighHRD_LowExpr 1.2603490 0.31796799         0.382
+5             4 LowHRD_HighExpr 1.9422402 0.04344453         0.087
+6             4 HighHRD_LowExpr 1.3773351 0.26980550         0.382
+
+=== F. GRADE SENSITIVITY ===
+Grade-complete cohort: n = 263 | deaths = 157 
+
+G3-4 G1-2 
+ 231   32 
+
+Continuous model, same patients, WITHOUT grade:
+       exp(coef) exp(-coef) lower .95 upper .95
+hrd_z      0.792      1.262     0.664     0.946
+expr_z     0.946      1.058     0.794     1.127
+age        1.017      0.983     1.002     1.033
+
+Continuous model, WITH grade:
+              exp(coef) exp(-coef) lower .95 upper .95
+hrd_z             0.785      1.275     0.656     0.939
+expr_z            0.928      1.078     0.777     1.109
+age               1.016      0.984     1.000     1.032
+grade_grpG1-2     0.660      1.515     0.401     1.088
+        hrd_z        expr_z           age grade_grpG1-2 
+       0.0079        0.4104        0.0475        0.1030 
+
+Group model, WITH age and grade:
+                  exp(coef) exp(-coef) lower .95 upper .95
+g3LowHRD_HighExpr     1.533      0.652     0.967     2.430
+g3HighHRD_LowExpr     1.292      0.774     0.782     2.135
+age                   1.021      0.980     1.006     1.036
+grade_grpG1-2         0.691      1.448     0.419     1.137
+g3LowHRD_HighExpr g3HighHRD_LowExpr               age     grade_grpG1-2 
+           0.0693            0.3170            0.0069            0.1459 
+
+ALL DONE. Now save the Console text as outputs/console_log.txt
+
+FIGURES DONE. See the outputs/figures folder.
+         0.0693            0.3170            0.0069            0.1459 
+
+ALL DONE. Now save the Console text as outputs/console_log.txt
+
+FIGURES DONE. See the outputs/figures folder.
