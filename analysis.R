@@ -9,10 +9,6 @@ if (!requireNamespace('BiocManager', quietly = TRUE)) install.packages('BiocMana
 if (!requireNamespace('GSVA', quietly = TRUE)) BiocManager::install('GSVA', ask = FALSE, update = FALSE)
 suppressPackageStartupMessages({library(survival); library(dplyr); library(boot); library(GSVA)})
 
-if (requireNamespace('rstudioapi', quietly = TRUE) && rstudioapi::isAvailable()) {
-  p <- tryCatch(rstudioapi::getSourceEditorContext()$path, error = function(e) '')
-  if (!is.null(p) && nzchar(p)) setwd(dirname(p))
-}
 cat('Working folder:', getwd(), '\n')
 if (!any(grepl('^data_clinical_patient', list.files())))
   stop('data_clinical_patient is not in this folder. Save analysis.R in the same folder as your data files, then run again.')
@@ -220,24 +216,32 @@ cat('\nContinuous model, WITH grade:\n'); print(round(summary(m_grd)$conf.int, 3
 cat('\nGroup model, WITH age and grade:\n'); print(round(summary(m_ggr)$conf.int, 3)); print(round(summary(m_ggr)$coefficients[, 'Pr(>|z|)'], 4))
 
 cat('\nALL DONE. Now save the Console text as outputs/console_log.txt\n')
+
 # ======================= 10. FIGURES (saved as PNG in outputs/figures) ======
 dir.create('outputs/figures', showWarnings = FALSE)
 pal <- c('#1b9e77', '#d95f02', '#7570b3')
-xmax <- 120   # x-axis of survival curves shown up to 120 months
+xmax <- 120   # survival curves shown up to 120 months
+fmt_p <- function(p) ifelse(p < 0.001, 'P < 0.001', sprintf('P = %.3f', p))
 
-km_plot <- function(file, data, grp, title, cols = pal) {
+km_plot <- function(file, data, grp, title, cols = pal, tmax = xmax, step = 20) {
   data$grp <- factor(grp)
-  fit <- survfit(Surv(os_time, os_event) ~ grp, data = data)
-  sd  <- survdiff(Surv(os_time, os_event) ~ grp, data = data)
-  p   <- 1 - pchisq(sd$chisq, df = length(sd$n) - 1)
   lv  <- levels(data$grp)
-  png(file, width = 2000, height = 1600, res = 300)
-  par(mar = c(4.5, 4.5, 3, 1))
-  plot(fit, col = cols[seq_along(lv)], lwd = 2.5, mark.time = FALSE, xlim = c(0, xmax),
-       xlab = 'Months from diagnosis', ylab = 'Overall survival probability', main = title, cex.main = 0.95)
+  fit <- survfit(Surv(os_time, os_event) ~ grp, data = data)
+  sdf <- survdiff(Surv(os_time, os_event) ~ grp, data = data)
+  p   <- 1 - pchisq(sdf$chisq, df = length(sdf$n) - 1)
+  tt  <- seq(0, tmax, by = step)
+  nr  <- matrix(summary(fit, times = tt, extend = TRUE)$n.risk, nrow = length(lv), byrow = TRUE)
+  png(file, width = 2000, height = 1900, res = 300)
+  par(mar = c(9, 4.5, 3, 1))
+  plot(fit, col = cols[seq_along(lv)], lwd = 2.5, mark.time = FALSE, xlim = c(0, tmax),
+       xlab = '', ylab = 'Overall survival probability', main = title, cex.main = 0.95)
+  mtext('Months from diagnosis', side = 1, line = 2.4)
   legend('topright', bty = 'n', lwd = 2.5, col = cols[seq_along(lv)],
          legend = paste0(lv, ' (n = ', table(data$grp)[lv], ')'), cex = 0.8)
-  legend('bottomleft', bty = 'n', legend = sprintf('Log-rank P = %.3f', p), cex = 0.9)
+  legend('bottomleft', bty = 'n', legend = paste('Log-rank', fmt_p(p)), cex = 0.9)
+  mtext('Number at risk', side = 1, line = 3.8, at = 0, adj = 0, cex = 0.7, font = 2)
+  for (i in seq_along(lv)) for (j in seq_along(tt))
+    mtext(nr[i, j], side = 1, line = 4.6 + 0.8 * (i - 1), at = tt[j], cex = 0.7, col = cols[i])
   dev.off()
 }
 
@@ -259,11 +263,13 @@ km_plot('outputs/figures/Fig2_KM_lowest_HRD_tertile.png', d,
         'Overall survival by genomic HRD', cols = c('#d95f02', '#1b9e77'))
 
 # Figure 3: concordance groups (tertiles)
-km_plot('outputs/figures/Fig3_KM_concordance_groups.png', d, d$g3,
+km_plot('outputs/figures/Fig3_KM_concordance_groups.png', d,
+        factor(d$g3, levels = levels(d$g3), labels = c('Other patients', 'Low HRD / high expression', 'High HRD / low expression')),
         'Overall survival by HRD/expression concordance group (tertiles)')
 
 # Figure 4: within low-HRD patients, by expression tertile
-lowH$expr_grp <- ifelse(lowH$expr_t == 1, '1 Low expression', ifelse(lowH$expr_t == 2, '2 Middle expression', '3 High expression'))
+lowH$expr_grp <- factor(ifelse(lowH$expr_t == 1, 'Low expression', ifelse(lowH$expr_t == 2, 'Middle expression', 'High expression')),
+                        levels = c('Low expression', 'Middle expression', 'High expression'))
 km_plot('outputs/figures/Fig4_KM_lowHRD_by_expression.png', lowH, lowH$expr_grp,
         'Overall survival by expression tertile within low-HRD patients')
 
@@ -275,23 +281,28 @@ fr <- function(label, m, term) {
 m_low <- coxph(Surv(os_time, os_event) ~ I(hrd_t == 1), data = d)
 g3row <- res_groups[res_groups$cutoff_groups == 3 & res_groups$group == 'LowHRD_HighExpr', ]
 rows <- rbind(
-  fr(sprintf('HRD, per 1 SD (age-adjusted, n=%d)', nrow(d_age)), m_c_age, 'hrd_z'),
-  fr(sprintf('Expression, per 1 SD (age-adjusted, n=%d)', nrow(d_age)), m_c_age, 'expr_z'),
+  fr(sprintf('Higher HRD score, per 1 SD (age-adjusted, n=%d)', nrow(d_age)), m_c_age, 'hrd_z'),
+  fr(sprintf('Higher expression, per 1 SD (age-adjusted, n=%d)', nrow(d_age)), m_c_age, 'expr_z'),
   fr(sprintf('Lowest HRD tertile vs rest (n=%d)', nrow(d)), m_low, 'I(hrd_t == 1)TRUE'),
   data.frame(label = sprintf('Low-HRD/high-expr vs other (n=%d, unadjusted)', g3row$n), HR = g3row$HR, lo = g3row$lo, hi = g3row$hi),
   fr('Low-HRD/high-expr vs other (age-adjusted)', m_g_age, 'g3LowHRD_HighExpr'),
-  fr(sprintf('Expression, per 1 SD, within low-HRD (n=%d)', nrow(lowH)), fitL, 'expr_z'))
+  fr(sprintf('Higher expression, per 1 SD, within low-HRD (n=%d)', nrow(lowH)), fitL, 'expr_z'))
 k <- nrow(rows)
-png('outputs/figures/Fig5_forest_plot.png', width = 2600, height = 1500, res = 300)
-par(mar = c(4.5, 19, 2.5, 1))
-plot(NA, xlim = c(0.4, 3.2), ylim = c(0.5, k + 0.5), log = 'x', yaxt = 'n',
-     xlab = 'Hazard ratio (95% CI), log scale', ylab = '', main = 'Overall survival: main hazard ratios', cex.main = 0.95)
+png('outputs/figures/Fig5_forest_plot.png', width = 2900, height = 1600, res = 300)
+par(mar = c(5.5, 20, 2.5, 9))
+plot(NA, xlim = c(0.4, 3.2), ylim = c(0.5, k + 0.5), log = 'x', xaxt = 'n', yaxt = 'n',
+     xlab = '', ylab = '', main = 'Overall survival: main hazard ratios', cex.main = 0.95)
+axis(1, at = c(0.5, 0.75, 1, 1.5, 2, 3), labels = c('0.5', '0.75', '1', '1.5', '2', '3'))
+mtext('Hazard ratio (95% CI), log scale', side = 1, line = 2.6)
+mtext('<-- lower hazard of death  |  higher hazard of death -->', side = 1, line = 4, cex = 0.7)
 abline(v = 1, lty = 2, col = 'grey40')
 y <- k:1
 segments(rows$lo, y, rows$hi, y, lwd = 2.5, col = '#1b9e77')
 points(rows$HR, y, pch = 15, cex = 1.3, col = '#1b9e77')
 axis(2, at = y, labels = rows$label, las = 1, tick = FALSE, cex.axis = 0.75)
-text(3.2, y, sprintf('%.2f (%.2f-%.2f)', rows$HR, rows$lo, rows$hi), adj = 1, cex = 0.7, pos = 2, offset = 0.2)
+xr <- 10^par('usr')[2]
+text(xr, y, sprintf('%.2f (%.2f-%.2f)', rows$HR, rows$lo, rows$hi), adj = 0, xpd = NA, cex = 0.75)
+text(xr, k + 0.5, 'HR (95% CI)', adj = 0, xpd = NA, cex = 0.75, font = 2)
 dev.off()
 write.csv(rows, 'outputs/08_forest_plot_values.csv', row.names = FALSE)
 cat('\nFIGURES DONE. See the outputs/figures folder.\n')
