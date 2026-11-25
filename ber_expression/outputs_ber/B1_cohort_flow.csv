@@ -1,0 +1,5 @@
+"step","n","deaths"
+"Tumours with RNA-seq",300,NA
+"With survival data",299,180
+"With survival data and age",280,167
+"With genomic HRD score",290,NA

@@ -1,0 +1,5 @@
+"comparison","n_shared","genes"
+"PARP1 & OGG1",0,""
+"PARP1 & APEX1",0,""
+"OGG1 & APEX1",1,"C2orf79"
+"all three",0,""

@@ -1,0 +1,8 @@
+GEPIA2 accessed 21 November 2026
+Module: Expression DIY, Box Plots
+Dataset: OV (426 tumour, 88 normal samples)
+|log2FC| cutoff: 1
+P-value cutoff: 0.01
+Match TCGA normal and GTEx data: yes
+Log scale: yes
+Results: PARP1 higher in tumour (significant); OGG1 lower in tumour (significant); APEX1 higher in tumour (not significant)
